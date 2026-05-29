@@ -1,0 +1,159 @@
+# ============================================================================
+# .gitignore for the superopt project.
+# Set-and-forget. If a tool not yet in use later starts dropping cruft, odds
+# are it's already covered below.
+# ============================================================================
+
+# ---------- Python: bytecode and caches ----------
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+
+# ---------- Python: distribution / packaging ----------
+build/
+dist/
+*.egg
+*.egg-info/
+.eggs/
+*.whl
+*.tar.gz
+MANIFEST
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ---------- Python: native extensions (Z3 ships these) ----------
+*.so
+*.dylib
+*.dll
+*.pyd
+
+# ---------- Python: virtual environments ----------
+venv/
+.venv/
+.venv-*/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# ---------- Python: testing / linting / typing caches ----------
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+.tox/
+.nox/
+.hypothesis/
+
+# ---------- Python: coverage ----------
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+*.cover
+*.py,cover
+
+# ---------- Python: profiling ----------
+*.prof
+
+# ---------- Python: version managers ----------
+.python-version
+
+# ---------- Jupyter (in case of stray exploration notebooks) ----------
+.ipynb_checkpoints/
+*.ipynb~
+
+# ---------- Node / npm (openskills CLI tooling; package.json + lock stay tracked) ----------
+node_modules/
+npm-debug.log*
+yarn-error.log
+
+# ---------- Secrets / local config ----------
+# Defensive: project doesn't currently use these, but never want them slipped in.
+.env
+.env.*
+!.env.example
+*.secret
+*.key
+*.pem
+credentials.json
+secrets.json
+
+# ---------- Claude Code (project-level) ----------
+# .claude/settings.json and hooks ARE tracked — they're the team config.
+# Only per-machine override stays local.
+.claude/settings.local.json
+
+# ---------- Obsidian vault — now a SEPARATE repo (smiles0527/superopt-notes) ----------
+# notes/ still lives here on disk but is its own git repo, synced independently
+# by obsidian-git. superopt ignores it entirely so vault churn never touches code.
+/notes/
+
+# ---------- OS: macOS ----------
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# ---------- OS: Windows ----------
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# ---------- OS: Linux ----------
+.directory
+.Trash-*
+
+# ---------- Editors: VS Code ----------
+.vscode/
+*.code-workspace
+
+# ---------- Editors: JetBrains (PyCharm, IntelliJ) ----------
+.idea/
+
+# ---------- Editors: Vim ----------
+*.swp
+*.swo
+*.swn
+*~
+
+# ---------- Editors: Emacs ----------
+\#*\#
+.\#*
+
+# ---------- Editors: Sublime ----------
+*.sublime-workspace
+*.sublime-project
+
+# ---------- Editors: other / newer ----------
+.fleet/
+.zed/
+
+# ---------- Misc: temp and backup files ----------
+*.bak
+*.tmp
+*.temp
+*.orig
+
+# ---------- Logs ----------
+*.log
+logs/
+
+# ---------- Doc build outputs (in case Sphinx/mkdocs/etc. show up later) ----------
+docs/_build/
+_build/
+site/
+
+# ---------- Project-specific scratch ----------
+# Use these for one-off experiments without polluting the repo.
+.scratch/
+scratch/
+tmp/
