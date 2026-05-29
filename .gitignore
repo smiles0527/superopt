@@ -83,10 +83,11 @@ yarn-error.log
 credentials.json
 secrets.json
 
-# ---------- Claude Code (project-level) ----------
-# .claude/settings.json and hooks ARE tracked — they're the team config.
-# Only per-machine override stays local.
-.claude/settings.local.json
+# ---------- Claude Code — kept LOCAL only (not published to GitHub) ----------
+# These still work on each machine (Claude reads them from disk); they're just
+# not tracked, so they never appear in the public repo or a fresh clone.
+/.claude/
+/CLAUDE.md
 
 # ---------- Obsidian vault — now a SEPARATE repo (smiles0527/superopt-notes) ----------
 # notes/ still lives here on disk but is its own git repo, synced independently
