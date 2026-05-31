@@ -87,4 +87,4 @@ A program is a recipe, and many different recipes give the same answer. This too
 
 ## Want the real thing?
 
-This skips all the math on purpose. The actual research behind it — the original superoptimizer, the solver, the guessing-game technique — is collected in [references.md](references.md).
+This skips all the math on purpose. The actual research behind it (the original superoptimizer, the solver, the guessing-game technique) is collected in [references.md](references.md).
