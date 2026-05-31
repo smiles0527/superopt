@@ -1,20 +1,12 @@
-# CEGIS — counterexample-guided inductive synthesis
+# CEGIS - counterexample-guided inductive synthesis
 
-The core technique of Phase 4. CEGIS turns the expensive "find a program correct
-on every input" into a loop of cheap queries over a small, growing set of test
-inputs.
+This is the central technique used in Phase 4; it transforms the hard question "find $P$ s.t. $P(x) = \text{spec}(x)$ for all $x$" into a series of cheap questions over a finite number of inputs.
 
-## The problem it solves
+## The Question it Solves
 
-Synthesis wants `∃P. ∀x. P(x) = spec(x)`: there's a program such that for all
-inputs it matches the spec. That `∃∀` alternation is what makes direct synthesis
-hard (see [[03-synthesis-and-constants]]).
+We want to find $P$ s.t. $P(x) = \text{spec}(x)$ for all $x$. The use of a quantified variable $x$ makes the above an difficult problem (see [[03-synthesis-and-constants]]). CEGIS (originally proposed by Solar-Lezama for sketching, [^sketch]) reformulates this problem. Instead of trying to reason over an infinite space of inputs, CEGIS maintains a finite set of example inputs and alternates between two unquantified problems.
 
-CEGIS, which came out of Solar-Lezama's sketching work,[^sketch] gets around it.
-Rather than quantify over all inputs at once, it keeps a finite set of example
-inputs and alternates two quantifier-free queries.
-
-## The loop
+## The Loop
 
 ```mermaid
 flowchart TD
@@ -43,63 +35,26 @@ flowchart TD
     class fail bad
 ```
 
-The synthesis query asks, over the finite example set, for a program — a wiring
-of components plus any constant values — that's correct on every example
-currently in the set. The inputs are concrete, so this query is quantifier-free.
+The synthesis question asks whether there exists a choice of wiring and constants (from the set of components we have) that evaluates to spec on all the examples in the set. This question is unquantified and hence significantly cheaper to answer than the original question. The verification question asks whether there exists an input where candidate and spec behave differently. This question is also unquantified. The program is deemed complete if the verification phase returns UNSAT (meaning it is correct on all inputs). Otherwise the found program is a candidate; we add its differing inputs (counterexamples) to the set of examples and ask again.
 
-The verification query is the equivalence check from
-[[02-equivalence-via-unsat]]: is there an input where this candidate disagrees
-with the spec? UNSAT means no failing input exists, so the candidate is correct
-for all inputs, and I'm done. SAT means the model is a counterexample input. I
-add it to the examples and loop.
+## Correctness and Termination
 
-## Why it terminates, and why it's correct
+Correctness is given by the fact that the only time the loop terminates is when the verification query is UNSAT. This is a full proof of correctness for all inputs, analogous to an equivalence check. The examples that are used are not evidence of a correct program; they are only tools to help find candidates. CEGIS is guaranteed to terminate because the space of candidate programs that could be synthesized at any given stage is finite (limited number of components to choose from, limited maximum component sizes and bounded ranges of constants to synthesize). Each new counterexample uniquely constrain the search space of possible candidates and ensures progress on the current step of synthesis. CEGIS usually converges in a few loops, much less than the input space size. CEGIS makes use of the property that a problem that is impossible to solve exhaustively can be broken down into many small tractable problems.
 
-It's correct because the loop only exits when verification returns UNSAT, and
-that's a genuine all-inputs proof, the same logic as a plain equivalence check.
-The examples are just a way to find the candidate. They're never trusted as the
-proof. The proof is the final UNSAT.
+## Component-based Encoding (Jha et al. 2010)
 
-It terminates because the candidate space — programs of bounded size over a
-fixed component set, with bit-vector constants — is finite. Each counterexample
-forces the next synthesized candidate to differ from the last one on at least
-that input, so no candidate gets proposed twice. A finite space with no repeats
-has to halt. In practice it converges in a handful of rounds, nowhere near the
-size of the input space.
+This represents a program in a way that a solver can understand. A program that takes some inputs and applies a circuit has each input, each output of a component, and each input to a component designated a line number. We introduce variables to represent which line number each input to a component is connected to; these are our "location" variables and are responsible for representing the dataflow. Additionally, constraints that enforce the well-formedness of the circuit are included.
 
-That's the real payoff: CEGIS replaces one hard `∀` with repeated `∃` queries
-over a growing sample, and lets counterexamples teach the synthesizer which
-inputs actually matter.
+| Constraint      | What it does               | What is an error if violated  |
+| --------------- | -------------------------- | ----------------------------- |
+| consistency     | each line may have only one source | two components write to the same line, or no component writes to the line |
+| acyclicity      | input must always be from a previous line  | a component depends on the output of another component which depends on the first component's input. |
+| completeness    | every line with an output may have an input    | no wire connects to the line carrying the output |
 
-## Component-based encoding (Jha et al. 2010)
-
-This is how the synthesis query represents "a program" as variables the solver
-can solve for. Full treatment in [[papers/jha-2010]]; the essentials:
-
-Fix a multiset of components, the operations available — say one `NEG` and one
-`AND`. Give every component output and every program input a line number. Then
-introduce location variables: for each component input, a variable saying which
-line it reads from. Solving for the location variables is the same as choosing
-the dataflow wiring. On top of that go the well-formedness constraints.
-
-| Constraint | Meaning | Bug if you get it wrong |
-|------------|---------|-------------------------|
-| consistency | each line is defined by exactly one component | duplicate or clobbered definitions |
-| acyclicity | a component only reads lines defined before it | a value used before it exists |
-| completeness | every input location points at a real line | a dangling wire |
-
-The connection constraints are the classic silent-bug zone. An off-by-one
-between "before" and "at-or-before" gives you a synthesizer that finds wrong
-programs which still pass the examples. The project `CLAUDE.md` flags this as a
-derive-it-yourself area, so I'll trace a three-component example by hand before
-trusting the encoding, with the working in `encodings/cegis-constraints.md`.
-
-Constants are handled the same way as in [[03-synthesis-and-constants]]: each
-constant slot is a free bit-vector variable the synthesis query solves for.
+Connection constraints can be subtle; you must think carefully about whether inputs should be "less than" the input, or "less than or equal to" it. This is one of the difficult things that makes CEGIS (and logic-based program synthesis) difficult and is what necessitates some manual analysis to determine constraints (for a simple 3-component example, the constraints can be determined manually before an automatic encoding (see `encodings/cegis-constraints.md`)). We can also synthesize arbitrary constants by having their value represented by a free bit-vector variable.
 
 ## Next
 
-Next: [[05-optimality]], what it actually means to call a synthesized program
-optimal.
+What is meant when a synthesized program is "optimal"? This is addressed in [[05-optimality]]
 
-[^sketch]: Solar-Lezama, A. (2008). *Program Synthesis by Sketching.* PhD thesis, UC Berkeley. https://people.csail.mit.edu/asolar/papers/thesis.pdf
+[^sketch]: Solar-Lezama, A. (2008). Program Synthesis by Sketching. PhD thesis, UC Berkeley. https://people.csail.mit.edu/asolar/papers/thesis.pdf

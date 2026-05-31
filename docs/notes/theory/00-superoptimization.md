@@ -1,75 +1,50 @@
 # Superoptimization
 
-The idea: instead of improving a program with rewrite rules, search for the best
-possible program that computes a given function, and prove it's optimal.
+Instead of making the given program better using rewrite rules, one could try searching for the best program that implements the desired function and showing its optimality.
 
-## Where it came from
+## Background
 
-The term is Alexia Massalin's, from her 1987 paper *Superoptimizer: A Look at
-the Smallest Program*.[^massalin] Her program enumerated short instruction
-sequences for a target function, ran them on test inputs to throw out the wrong
-ones, and turned up startlingly short sequences no human would have written.
+The term is first introduced in the work by Alexia Massalin *Superoptimizer: A Look at the Smallest Program* from 1987.[^massalin] Her technique involved enumerating the shortest programs computing the target function, checking them against the sample inputs and finding programs too efficient and elegant for a human to write.
 
-The "super" sets it apart from the peephole optimizer a compiler runs. A
-peephole optimizer applies a fixed set of local rewrite rules (`x*2` becomes
-`x<<1`) and stops when nothing else fires. It only finds the improvements
-someone already wrote down as a rule. A superoptimizer searches the space of all
-short programs instead, so it can turn up sequences nobody wrote a rule for. If
-the search is exhaustive, it can also prove no shorter sequence exists.
+While compared to a peephole optimizer, where the search is guided by a finite set of rewrite rules like multiplication by two to left shift (x*2 => x<<1) and stops once the rules are exhausted, a superoptimizer explores the space of programs exhaustively, which allows for discovering new combinations that were never covered before. When the space is fully explored, it even allows proving optimality.
 
-## Two axes that define a superoptimizer
+## Definition
 
-| Axis | Options | This project |
-|------|---------|--------------|
-| Search strategy | exhaustive enumeration, stochastic (MCMC), SMT synthesis | enumeration (Phase 3), then SMT/CEGIS (Phase 4) |
-| Correctness check | test-based (sample inputs), formal (prove for all inputs) | formal, via SMT — see [[02-equivalence-via-unsat]] |
+There are two dimensions along which superoptimizers can vary.
 
-Massalin's original checked correctness by testing, which is fast but can wave
-through a wrong program that happens to agree on the inputs you sampled. The
-modern move, and the one this project takes, is to swap testing for a formal
-equivalence proof. Then "optimal" means correct for every input, not just the
-ones you tried.
+| Dimension       | Variants                  | This Project               |
+|-----------------|---------------------------|----------------------------|
+| Search strategy | Enumerative, stochastic (Markov chain Monte Carlo (MCMC)), synthesis using Satisfiability Modulo Theory (SMT) | Enumerative (in Phase 3), then SMT (CEGIS) (Phase 4) |
+| Checking        | Testing                   | Formal, using SMT (see [[02-equivalence-via-unsat]]) |
 
-## Where this project sits
+With a formal equivalence checking, one defines “optimality” to mean correctness over all possible inputs rather than just tested inputs. That is another difference between the traditional approach (used by Alexia Massalin) and today's approach (this project included).
+
+## Context for this project
 
 ```mermaid
 timeline
-    accTitle: Superoptimization milestones
-    accDescr: A chronological view of key superoptimization systems from 1987 to the late 2010s, showing the shift from test-based enumeration toward formal and stochastic methods.
-    1987 : Massalin Superoptimizer (enumerate + test)
-    2006 : Bansal and Aiken peephole superopt (learned rules)
-    2010 : Jha et al. component-based synthesis (SMT)
-    2013 : STOKE stochastic superopt (MCMC)
-    2017 : Souper (SMT, wired into LLVM)
+    accTitle: Superoptimization Milestones
+    accDescr: Chronology of notable superoptimization techniques from 1987 until late 2010s, highlighting the evolution from testing-based enumeration towards formal proofs and stochastic approaches.
+    1987 : Superoptimizer by Alexia Massalin (enumerate + test)
+    2006 : Super-peephole optimizer by Bansal and Aiken (enumerative learning)
+    2010 : Component-based superoptimizer by Jha et al. (SMT)
+    2013 : STOKE stochastic superoptimizer (MCMC)
+    2017 : Souper (SMT)
 ```
 
-Bansal and Aiken (2006) harvested optimal rewrite rules offline and applied them
-like a giant peephole table.[^bansal] STOKE (2013) treats optimization as a
-random walk: mutate the program, accept or reject by a cost function, repeat. It
-reaches longer sequences than enumeration can, but it gives up the
-exhaustive-optimality guarantee.[^stoke] Souper (2017) is the closest production
-relative of this project — an SMT-based synthesizing superoptimizer that plugs
-into LLVM and finds optimizations the compiler missed.[^souper] It's the
-reference codebase named in the plan.
+A recent example of a peephole-based superoptimizer is the work by Bansal and Aiken (2006). They developed an algorithm to learn peephole superoptimizer rules automatically and use them to optimize the given program. STOKE by Schkufza et al. (2013) takes a stochastic approach: it considers each program modification as mutation and accepts/rejects it based on how much improvement it brings. Although capable of producing longer sequences of instructions than the previous methods, it gives up on completeness. Souper (2017) is perhaps the closest predecessor to the current project; it is an SMT-based synthesizing superoptimizer that integrates with LLVM and reveals hidden optimizations not found by the compiler.[^souper]. It will serve as the reference implementation described in the proposal.
 
-This project stakes out the provably-optimal, short, loop-free integer and
-bitwise corner. That's small enough that exhaustive enumeration (Phase 3) is a
-real baseline, and SMT synthesis (Phase 4) can prove optimality rather than just
-improve on what it's given.
+This project focuses on generating optimal, small and loop-free integer and bitwise optimizations. With this narrowed-down domain, exhaustive enumeration is still applicable (Phase 3) and SMT-based synthesis (Phase 4) allows proving optimality.
 
-## Why scope it this way
+## Why?
 
-Loops, memory, and floating point each blow up the equivalence problem. Loops
-need invariants. Memory needs the theory of arrays. Floats need bit-exact IEEE
-reasoning. Sticking to straight-line integer and bitwise routines keeps the
-equivalence query decidable and fast (see [[01-smt-and-bitvectors]]), and that's
-what makes "provably optimal" tractable for one person.
+It is significantly easier to prove equivalence between straight-line integer or bitwise programs than the ones containing loops, memory accesses or involving floating point numbers. Loops need invariants, memory access needs array analysis and floats are notoriously difficult to reason about. This project limits itself to deciding equivalence in straight-line integer and bitwise programs (see [[01-smt-and-bitvectors]])
 
 ## Next
 
-Next: [[01-smt-and-bitvectors]], the solver technology that makes formal
-equivalence checking possible.
+Next, [[01-smt-and-bitvectors]] on the SMT solvers and bit vectors.
 
+References:
 [^massalin]: Massalin, A. (1987). *Superoptimizer: A Look at the Smallest Program.* ASPLOS II. https://dl.acm.org/doi/10.1145/36206.36194
 [^bansal]: Bansal, S., & Aiken, A. (2006). *Automatic Generation of Peephole Superoptimizers.* ASPLOS. https://dl.acm.org/doi/10.1145/1168857.1168906
 [^stoke]: Schkufza, E., Sharma, R., & Aiken, A. (2013). *Stochastic Superoptimization.* ASPLOS. https://dl.acm.org/doi/10.1145/2451116.2451150
