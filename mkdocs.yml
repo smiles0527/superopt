@@ -1,0 +1,64 @@
+# MkDocs config for rendering the study notes as a local site.
+#
+#   pip install mkdocs-material mkdocs-roamlinks-plugin
+#   mkdocs serve      # then open http://localhost:8000
+#
+# Nothing is hosted by this — it renders docs/notes/ locally. The built HTML
+# goes to site/ (gitignored). Repo stays private.
+
+site_name: Superopt notes
+site_description: "Study notes for the superopt project: superoptimization, SMT, and CEGIS."
+
+# Render the notes snapshot, not the whole repo.
+docs_dir: docs/notes
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - scheme: slate
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  features:
+    - navigation.sections
+    - navigation.top
+    - navigation.instant
+    - content.code.copy
+    - search.suggest
+    - search.highlight
+
+nav:
+  - Home: index.md
+  - Theory:
+      - Overview: theory/index.md
+      - Superoptimization: theory/00-superoptimization.md
+      - SMT & bit-vectors: theory/01-smt-and-bitvectors.md
+      - Equivalence via UNSAT: theory/02-equivalence-via-unsat.md
+      - Synthesis & constants: theory/03-synthesis-and-constants.md
+      - CEGIS: theory/04-cegis.md
+      - 'What "optimal" means': theory/05-optimality.md
+  - Encodings:
+      - Shifts: encodings/shifts.md
+  - Papers:
+      - Jha et al. 2010: papers/jha-2010.md
+
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+plugins:
+  - search
+  - roamlinks   # converts Obsidian [[wikilinks]] into real relative links
