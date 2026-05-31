@@ -46,7 +46,6 @@ harness* is the trust check.
 |---|---|---|
 | `README.md` | Portfolio visitor, prof, recruiter | Drafted in Phase 1, refined in Phase 6 |
 | `DECISION_LOG.md` | Future-you + reviewer | Entries added throughout, starting Phase 0 |
-| `AI_USAGE.md` | Honest record | Entries added throughout, starting Phase 0 |
 | `report/report.md` | The paper-style final writeup | Phase 6 |
 | `notes/papers/*.md` | You (Obsidian vault) | As you read papers |
 | `notes/encodings/*.md` | You (Obsidian vault) | Phase 2 onwards |
@@ -190,7 +189,6 @@ This test is non-negotiable per CLAUDE.md. Test design:
 ### Task 2.4 — Commit + writeup
 
 - [ ] DECISION_LOG entries: Z3 BitVec library choice, how you encode each Op, the cross-check methodology and its result
-- [ ] AI_USAGE.md entries: anywhere Claude helped with Z3 API or encoding choices
 - [ ] Commit + push
 
 **Phase 2 done when:** 100k random cross-checks pass, `equivalent` returns `Equivalent` on the `x+x ≡ x<<1` test, returns a verified `Counterexample` on a wrong pair.
@@ -231,7 +229,6 @@ proof.
   - `test_finds_xor_for_swap` or similar small known-optimal benchmark
   - `test_optimality_proof` — length-`N-1` enumeration exhausted before length-`N` succeeded
 - [ ] DECISION_LOG: enumeration order, pruning rules, what "canonical form" means in your IR
-- [ ] AI_USAGE: anywhere Claude helped with pruning insight or canonical-form design
 - [ ] Commit + push
 
 **Phase 3 done when:** `search.py` rediscovers `x & -x` for `isolate_rmb`, reports it as provably optimal at length 2.
@@ -295,7 +292,6 @@ Sketch only — you derive and write this:
 
 - [ ] `tests/test_cegis.py` — synth a known target end-to-end, asserting both correctness and the specific shape of the result
 - [ ] DECISION_LOG entries: component multiset design, well-formedness constraint derivation (with the by-hand trace), free-constant insight, scaling notes
-- [ ] AI_USAGE for any Claude assists during CEGIS derivation
 - [ ] Commit + push
 
 **Phase 4 done when:** A real Hacker's Delight function (with constants) is synthesized over 32-bit inputs, verified equivalent to the spec.
@@ -356,12 +352,7 @@ Sketch only — you derive and write this:
 - [ ] Source citations from `notes/papers/`
 - [ ] Self-review: read it as if you'd never seen the project. Would a prof understand it? Does it overclaim? Edit.
 
-### Task 6.3 — Finalize AI_USAGE.md
-
-- [ ] Read every entry; make sure nothing is overclaimed in *either* direction (don't undersell your work either)
-- [ ] One paragraph summary at the top: what kinds of things Claude helped with, where the intellectual ownership clearly sits
-
-**Phase 6 done when:** Fuzzer passes 100% on every result, `report/report.md` is reviewed and you're proud of it, `AI_USAGE.md` is honest.
+**Phase 6 done when:** Fuzzer passes 100% on every result, `report/report.md` is reviewed and you're proud of it.
 
 ---
 
@@ -371,7 +362,6 @@ Tracking all the prose-output across phases in one place:
 
 - [ ] `README.md` — Phase 1 draft, Phase 6 polish
 - [ ] `DECISION_LOG.md` — ongoing, target ≥1 entry per phase
-- [ ] `AI_USAGE.md` — ongoing, every substantive assist gets a line
 - [ ] `notes/papers/jha-2010.md` — initial stub exists, deepen in Phase 4
 - [ ] `notes/encodings/shifts.md` — initial stub exists, fill in Phase 2
 - [ ] `notes/encodings/overflow.md` — create in Phase 2
@@ -391,7 +381,7 @@ This plan is for **you** to execute. Claude's role:
 - **Code review.** After each commit, ask for a `code-review` skill pass; before merging anything tricky, `requesting-code-review`.
 - **Debugging.** When something fails, `systematic-debugging` skill applies.
 - **Verification.** Before claiming a phase done, `verification-before-completion` skill applies — run the tests, confirm output, evidence before assertion.
-- **Prose drafting.** Claude can draft DECISION_LOG entries, AI_USAGE entries, README sections, report paragraphs — for you to edit.
+- **Prose drafting.** Claude can draft DECISION_LOG entries, README sections, report paragraphs — for you to edit.
 
 Claude will **not** ghost-write algorithm code or execute this plan
 task-by-task with subagents. That'd bypass the authorship rule and defeat
