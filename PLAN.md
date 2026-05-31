@@ -1,10 +1,11 @@
 # Superopt — Implementation Plan
 
-> Authored under the **authorship rule** (see `CLAUDE.md`). Algorithm code is
-> for the project owner to write; Claude assists with explanations, test
-> writing, code review, debugging, and prose drafting. Tasks use `- [ ]` for
-> tracking. This plan is the spine; phase-specific subplans (e.g. a separate
-> CEGIS plan) will be drafted when their phase arrives.
+> Authored under the **authorship rule** (see `CLAUDE.md`): never commit a line
+> you can't explain. Claude may write complete code, including the core
+> algorithms; the project owner reads every line and must be able to explain it
+> before it's committed. Tasks use `- [ ]` for tracking. This plan is the spine;
+> phase-specific subplans (e.g. a separate CEGIS plan) will be drafted when their
+> phase arrives.
 
 **Goal:** A provably-optimal superoptimizer for short, loop-free integer /
 bitwise routines, using Z3 SMT for equivalence checking and CEGIS for
@@ -373,19 +374,20 @@ Tracking all the prose-output across phases in one place:
 
 ## Execution model
 
-This plan is for **you** to execute. Claude's role:
+This plan is for **you** to own. Claude's role:
 
 - **Explanation.** Z3 API, SMT theory, bitvec semantics, the CEGIS paper.
-- **Sketching.** When you ask, Claude will sketch an encoding shape or a CEGIS constraint — *not* a finished implementation.
+- **Implementation.** Claude can write complete code, including the encodings and CEGIS, for you to read, question, and be able to explain before it lands.
 - **Test writing.** Test code describes behavior, not implementation. Claude can draft tests for your review.
 - **Code review.** After each commit, ask for a `code-review` skill pass; before merging anything tricky, `requesting-code-review`.
 - **Debugging.** When something fails, `systematic-debugging` skill applies.
 - **Verification.** Before claiming a phase done, `verification-before-completion` skill applies — run the tests, confirm output, evidence before assertion.
 - **Prose drafting.** Claude can draft DECISION_LOG entries, README sections, report paragraphs — for you to edit.
 
-Claude will **not** ghost-write algorithm code or execute this plan
-task-by-task with subagents. That'd bypass the authorship rule and defeat
-the whole point of doing this project.
+The one hard rule: don't commit a line you can't explain. Claude can write the
+code; you read it, understand it, and own the result. Avoid handing the whole
+plan to subagents to run unattended — the point is that you understand what
+lands, not that you typed it.
 
 When you're ready for the next phase to be more granular than what's above
 (once Phase 0–1 are done), say "write the Phase 2 plan" and I'll produce a
