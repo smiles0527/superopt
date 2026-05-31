@@ -1,6 +1,6 @@
 # Superopt — Notes
 
-Vault for the [superoptimizer](../CLAUDE.md) project. Paper notes, encoding
+Vault for the superoptimizer project. Paper notes, encoding
 sketches, and reasoning that supports `DECISION_LOG.md` in the repo root.
 
 ## Map

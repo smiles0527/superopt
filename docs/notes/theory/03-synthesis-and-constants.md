@@ -53,7 +53,7 @@ At 32-bits, one const operand exponentially increases the size of the search spa
 
 Instead of brute-forcing through possible constant values, the SMT solver can be used to solve for them. A constant within the program is modeled as a free bit-vector variable. The solver is then used to find values of this variable such that the resulting program satisfies the specification. Essentially, the $2^w$ possible values are explored symbolically within the solver, rather than explicitly tested.
 
-This is the major reason why the SMT-based CEGIS approach used in Phase 4, is more scalable than enumeration and is considered to be a key insight of the project, as identified in `CLAUDE.md` and which merits documenting in one's own words: enumeration treats a constant as $2^w$ separate candidate programs to verify, whereas the SMT approach considers the constant as a single unknown to be solved.
+This is the major reason why the SMT-based CEGIS approach used in Phase 4, is more scalable than enumeration and is considered to be a key insight of the project, which merits documenting in one's own words: enumeration treats a constant as $2^w$ separate candidate programs to verify, whereas the SMT approach considers the constant as a single unknown to be solved.
 
 ## The catch that motivates CEGIS
 

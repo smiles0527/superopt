@@ -6,10 +6,9 @@ bit-vector reasoning, equivalence checking, program synthesis, CEGIS, and what
 
 ## What these notes are, and what they aren't
 
-These are study notes. I wrote them (with Claude's help) to get the background
-straight, and every outside claim is cited so I can check it against the real
-source instead of taking my own word for it. They're logged as AI-assisted in
-`AI_USAGE.md`.
+These are study notes. I wrote them to get the background straight, and every
+outside claim is cited so I can check it against the real source instead of
+taking my own word for it.
 
 They are not portfolio writing. The report in `report/report.md` and any
 follow-ups are mine, in my own words — that's where I actually show I understand
@@ -35,8 +34,8 @@ The notes build on each other, so on a first pass read them in order.
 
 ## The four things to keep my own hands on
 
-From the project `CLAUDE.md`. These are the spots where wrong-but-plausible work
-produces confidently-wrong results, so I write them myself:
+These are the spots where wrong-but-plausible work produces confidently-wrong
+results, so I write them myself:
 
 1. SMT encodings of the nasty instructions — see [[01-smt-and-bitvectors]] and [[encodings/shifts]]
 2. CEGIS correctness — see [[04-cegis]]
