@@ -28,17 +28,21 @@ harness* is the trust check.
 
 ### Code
 
+Source lives in the `superopt/` package (installable via `pip install -e .`);
+standalone scripts go in `scripts/`; tests in `tests/`.
+
 | File | Responsibility | First created in |
 |---|---|---|
-| `ir.py` | `Op` enum, `Instruction` dataclass, `Program` dataclass — pure data, no logic | Phase 1 |
-| `interp.py` | `execute(program, inputs, width) -> int` — reference semantics in Python | Phase 1 |
-| `encode.py` | `encode(program, width) -> (input_vars, output_expr)` — `Op` → Z3 BitVec | Phase 2 |
-| `equiv.py` | `equivalent(a, b, width) -> Equivalent \| Counterexample` | Phase 2 |
-| `search.py` | Phase 3 enumeration driver; rewritten / wrapped for CEGIS in Phase 4 | Phase 3 |
-| `cegis.py` | Component-based synth-query and verify-query (Jha 2010) | Phase 4 |
-| `cost.py` | Per-opcode latency/throughput weights (only if Phase 5A pursued) | Phase 5 |
-| `fuzz.py` | Independent random-input oracle, no shared code with `encode.py` | Phase 6 |
-| `benchmarks/__init__.py` + spec files | Reference specs as Python functions | Phase 1 |
+| `superopt/ir.py` | `Op` enum, `Instruction` and `Program` dataclasses — pure data, no logic | Phase 1 |
+| `superopt/interp.py` | `execute(program, inputs) -> int` — reference semantics in Python | Phase 1 |
+| `superopt/encode.py` | `encode(program) -> (input_vars, output_expr)` — `Op` → Z3 BitVec | Phase 2 |
+| `superopt/equiv.py` | `equivalent(a, b) -> Equivalent \| Counterexample` | Phase 2 |
+| `superopt/search.py` | Phase 3 enumeration driver; rewritten / wrapped for CEGIS in Phase 4 | Phase 3 |
+| `superopt/cegis.py` | Component-based synth-query and verify-query (Jha 2010) | Phase 4 |
+| `superopt/cost.py` | Per-opcode latency/throughput weights (only if Phase 5A pursued) | Phase 5 |
+| `superopt/fuzz.py` | Independent random-input oracle, no shared code with `encode.py` | Phase 6 |
+| `superopt/benchmarks/` | Reference specs as Python functions | Phase 1 |
+| `scripts/` | Standalone runners, comparisons, experiments | As needed |
 | `tests/` | pytest suite — `test_interp.py`, `test_encoder_vs_interp.py`, etc. | Throughout |
 
 ### Writeups
@@ -98,13 +102,11 @@ cross-checked on 10,000 random inputs against hand-written spec functions.
 
 ### Files to create
 
-- `ir.py` — `Op` enum (`ADD, SUB, MUL, AND, OR, XOR, NOT, NEG, SHL, LSHR, ASHR, CONST`); `Operand` (Input | Const | Result-of-instruction-N); `Instruction`; `Program` (ordered list + output index). Width parameter on `Program` (start at 8).
-- `interp.py` — `execute(program, inputs, width) -> int`. Mask every intermediate value to width. Use Python's int arithmetic; for `ASHR`, sign-extend before shifting.
-- `benchmarks/__init__.py` — empty
-- `benchmarks/popcount.py` — `popcount(x: int, width: int) -> int`
-- `benchmarks/abs_val.py` — `absval(x: int, width: int) -> int` (use the standard "branchless abs" trick later — but for the *spec*, write the obvious version)
-- `benchmarks/isolate_rmb.py` — `isolate_rmb(x: int, width: int) -> int` (the spec: return x with all bits except its lowest set bit cleared; the trick `x & -x` comes later as a *candidate*, not the spec)
-- `tests/__init__.py` — empty
+- `superopt/ir.py` — `Op` enum; `Operand` (input / const / result-of-instruction-N); `Instruction`; `Program`. Width lives on `Program` (start at 8). *(Already scaffolded — see DECISION_LOG.md for the operand-vs-opcode-const and output choices.)*
+- `superopt/interp.py` — `execute(program, inputs) -> int`. Mask every intermediate value to width. Use Python's int arithmetic; for `ASHR`, sign-extend before shifting.
+- `superopt/benchmarks/popcount.py` — `popcount(x: int, width: int) -> int`
+- `superopt/benchmarks/abs_val.py` — `absval(x: int, width: int) -> int` (the branchless trick comes later as a *candidate*; for the *spec*, write the obvious version)
+- `superopt/benchmarks/isolate_rmb.py` — `isolate_rmb(x: int, width: int) -> int` (spec: x with all bits except its lowest set bit cleared; `x & -x` comes later as a *candidate*, not the spec)
 - `tests/test_interp.py`
 
 ### Task 1.1 — IR (authorship-rule zone, but mostly mechanical)
