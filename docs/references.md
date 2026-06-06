@@ -38,6 +38,16 @@ Z3 itself, with its Python API, lives at https://github.com/Z3Prover/z3. The off
 
 SMT-LIB's theory of fixed-size bit-vectors pins down the exact meaning of `bvadd`, `bvashr`, `bvudiv`, and the rest. It's the source to trust when you encode each opcode in Phase 2. https://smt-lib.org/theories-FixedSizeBitVectors.shtml
 
+## The theory underneath
+
+Two textbooks for the background the papers above take for granted. Read them alongside the early phases; this is the slow foundational reading, not the night-before-Phase-4 kind.
+
+*The Calculus of Computation: Decision Procedures with Applications to Verification* (Aaron Bradley, Zohar Manna; Springer, 2007; ISBN 978-3-540-74112-1) is the closest thing to a textbook for the front half of this project. Its decision-procedure chapters cover first-order logic, the theory of fixed-size bit-vectors, and theory combination, which is what Z3 is doing under the hood when it settles `x+x ≡ x<<1`. It backs the encoder and the equivalence check in Phase 2, and because CEGIS verifies each candidate with a decision-procedure query over all inputs, it covers half of Phase 4 as well. https://doi.org/10.1007/978-3-540-74113-8
+
+*Mathematical Logic for Computer Science*, 3rd edition (Mordechai Ben-Ari; Springer, 2012; ISBN 978-1-4471-4128-0) is the logic underneath the proof: propositional and first-order logic, soundness and completeness, resolution, SAT. It's where the Phase 0 question really lives. Why does an UNSAT result prove equivalence for every input and not just the ones you happened to try? https://doi.org/10.1007/978-1-4471-4129-7
+
+Neither book covers synthesis. They give you the verifier; the component-based encoding that does the actual synthesizing is still the Jha paper at the top of this list.
+
 ## Benchmarks
 
 *Hacker's Delight*, 2nd edition (Henry S. Warren Jr.; Addison-Wesley, 2012; ISBN 978-0321842688) is the source of the bit tricks the tool should rediscover on its own: `x & -x`, popcount, magic-number division, de Bruijn sequences. It's a book, so there's no DOI. The book is the reference.
