@@ -46,7 +46,7 @@ class Const:
 @dataclass(frozen=True)
 class ResultRef:
     index: int
-
+    
 
 Operand = InputRef | Const | ResultRef
 
