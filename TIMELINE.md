@@ -23,5 +23,5 @@ A running log of project milestones. Newest last.
   cross-check and the fuzzer if Phase 4 runs long. Added two background
   textbooks, Bradley and Manna's *The Calculus of Computation* and Ben-Ari's
   *Mathematical Logic for Computer Science*, to the references, and folded a
-  two-track reading plan into the schedule: the textbooks alongside Phases 1–3,
+  two-track reading plan into the schedule, the textbooks alongside Phases 1–3 and
   Jha 2010 before Phase 4.

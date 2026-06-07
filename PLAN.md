@@ -19,9 +19,9 @@ Ben-Ari's *Mathematical Logic for Computer Science* for the logic behind the
 Phase 0 "why UNSAT is a proof" question. Jha 2010 is the targeted read before
 Phase 4. Citations are in `docs/references.md`.
 
-I work under one rule (`CLAUDE.md`): I never commit a line I can't explain.
-Claude can write complete code, including the core algorithms, but I read every
-line and have to be able to defend it before it lands. This file is the spine;
+One rule sits over all of it, from `CLAUDE.md`. I never commit a line I can't
+explain. Claude can write complete code, including the core algorithms, but I
+read every line and have to be able to defend it before it lands. This file is the spine;
 `TIMELINE.md` logs what's done, and `SCHEDULE.md` puts the phases on a calendar.
 
 ---
@@ -54,7 +54,7 @@ under `notes/` as I read papers, and `report/report.md` as the final writeup.
 ## Phase 0: setup and the Z3 hello-world
 
 Phase 0 is just a working environment and one proof that the whole idea holds up.
-A venv with `z3-solver` and `pytest`, then the proof that matters: that `x*2` and
+A venv with `z3-solver` and `pytest`, then the proof that matters, that `x*2` and
 `x<<1` are the same for every 8-bit input. I write a handful of lines that assert
 the *negation*, that the two differ, and expect Z3 to answer `unsat`. That `unsat`
 means no input makes them differ, which is the project in miniature, a result
@@ -80,9 +80,9 @@ program, and a plain Python interpreter that runs it. The IR is already scaffold
 in `ir.py`, an `Op` enum, an `Operand` that's either an input, a constant, or a
 reference to an earlier result, and a `Program` that carries its own width (8 bits
 to start). The interpreter is a big match on the opcode that masks every
-intermediate back down to width. The one real trap is arithmetic shift-right:
-Python's `>>` already does the arithmetic shift on negative ints, but I'm holding
-masked unsigned values, so I have to sign-extend, shift, then mask back. That
+intermediate back down to width. The one real trap is arithmetic shift-right,
+where Python's `>>` already does the arithmetic shift on negative ints but I'm
+holding masked unsigned values, so I sign-extend, shift, then mask back. That
 decision goes in `notes/encodings/shifts.md`.
 
 To trust the interpreter I need something to check it against, so I write three
@@ -115,7 +115,7 @@ has to be `LShR(x, y)`, not Z3's `>>` (that one's arithmetic), and getting it
 wrong quietly corrupts every program that touches it. Multiply wraps on its own
 at fixed width, negate is just `-x`, and constants become `BitVecVal(c, width)`
 with the width spelled out, never an implicit Python int. Then the cross-check,
-the part `CLAUDE.md` calls non-negotiable and I agree with: a thousand random
+the part `CLAUDE.md` calls non-negotiable and I agree with. A thousand random
 programs, a hundred random inputs each, interpreter against formula, and every
 one of the hundred thousand has to agree. After that `equivalent(a, b)` is short,
 assert the inputs equal and the outputs different, ask Z3, and read `unsat` as
@@ -146,7 +146,7 @@ read undefined slots, and collapse commutative duplicates (`ADD(a, b)` and
 The target is `isolate_rmb`. I expect the search to come back with a
 two-instruction program, negate then and, which is exactly `x & -x`, reported as
 optimal at length two because every length-one program failed first. This is the
-de-risk milestone: if the slow method rediscovers a known trick and proves it
+de-risk milestone. If the slow method rediscovers a known trick and proves it
 minimal, the interpreter, encoder, and equivalence stack are all sound, and I can
 build CEGIS on top without wondering whether the foundation lies to me.
 
@@ -174,7 +174,7 @@ and trace a three-component example by hand before writing any Z3.
 The payoff, and the insight worth writing up, is constants. Brute force can only
 try constants it thought to enumerate, but here a needed constant is just a free
 `BitVec` variable the solver solves for, so it can invent a magic number I'd never
-have guessed. The loop itself is guess-and-check: synthesize a wiring that fits a
+have guessed. The loop itself is guess-and-check. Synthesize a wiring that fits a
 handful of example inputs, then verify it against the spec over all inputs; if
 verify finds a counterexample, add it to the examples and synthesize again.
 `unsat` on the verify query means done, and proven over every 32-bit input. I get
@@ -203,7 +203,7 @@ To do:
 
 Phase 5 only happens if there's time, and it's the first thing cut under pressure.
 There are three directions, and I'd pick at most one or two. The defensible one,
-the closest thing to a finding that's mine, is beating `-O3`: write each spec in C,
+the closest thing to a finding that's mine, is beating `-O3`. Write each spec in C,
 compile with `gcc -O3` and `clang -O3`, count the instructions, run my tool on the
 same specs, and document the cases where it comes out shorter. The second is a
 latency cost model, where "optimal" stops meaning fewest instructions and starts
@@ -225,7 +225,7 @@ To do:
 ## Phase 6: the fuzzer and the writeup
 
 Phase 6 is the trust layer and the story. The fuzzer is deliberately dumb and
-deliberately independent: it imports the reference specs and the programs my tool
+deliberately independent. It imports the reference specs and the programs my tool
 called optimal, runs both on millions of random inputs, and reports any
 divergence. The whole point is that it shares no code with the encoder, so it
 catches an encoding bug that the encoder-based equivalence check would be blind

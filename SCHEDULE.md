@@ -2,8 +2,8 @@
 
 A forward-looking, dated plan. It complements the other two planning files.
 `PLAN.md` is the phase *spine*, what each phase builds; `TIMELINE.md` is the
-backward *log* of what already happened. This file is the *calendar*: when each
-phase lands, and where the risk sits.
+backward *log* of what already happened. This file is the *calendar*. It says when each
+phase lands and where the risk sits.
 
 ---
 
@@ -48,10 +48,10 @@ starts crossing between machines.
 
 Two danger zones can't be compressed without risking confidently-wrong
 "optimal" results, and the whole schedule is arranged to protect them. The first
-is the Phase 2 encodings: logical versus arithmetic shift, shifting at or past
-the width, multiply and negate overflow. The second is the Phase 4 CEGIS
-connection constraints: acyclicity, single-definition, the off-by-one zone where
-silent bugs hide. Phase 5 is the shock absorber that gives those room; the
+is the Phase 2 encodings, where logical and arithmetic shift diverge, a shift can
+run at or past the width, and multiply and negate overflow. The second is the
+Phase 4 CEGIS connection constraints, the acyclicity and single-definition rules
+and the off-by-one zone where silent bugs hide. Phase 5 is the shock absorber that gives those room; the
 encoder cross-check and the fuzzer never are.
 
 ---
@@ -80,7 +80,7 @@ does diverge.
 
 **Phase 3, brute-force MVP (Jul 13–24, two weeks).** Enumerate programs by
 increasing length with aggressive pruning, rediscover `x & -x` for `isolate_rmb`,
-and report it as optimal at length two. This is the de-risk checkpoint: once it
+and report it as optimal at length two. This is the de-risk checkpoint. Once it
 works, the interpreter, encoder, and equivalence stack are proven sound and
 CEGIS can be built on top with confidence.
 
@@ -125,7 +125,7 @@ neither textbook. Full citations are in `docs/references.md`.
 
 Phase 4 is what eats the buffer. If it slips past August 21, the schedule
 degrades in a fixed order, and correctness never pays the price. First, drop
-Phase 5 entirely. Then shrink Phase 4's ambition: the De Bruijn trailing-zeros
+Phase 5 entirely. Then shrink Phase 4's ambition. The De Bruijn trailing-zeros
 target falls back to just `isolate_rmb`, and the bit-vectors drop to 8-bit if
 32-bit proves slow. Then compress the writeup, framing the narrowed scope
 honestly. What never gets cut, under any pressure, is the Phase 2 cross-check or
