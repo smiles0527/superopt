@@ -27,15 +27,22 @@ deliverable rather than a maybe.
 
 ---
 
-## Where things stand (2026-06-05)
+## Where things stand (2026-06-09)
 
-The scaffold is in place, but the project is really at the end of Phase 0 and
-the start of Phase 1. The IR in `ir.py` is real and clean. `interp.py`,
-`encode.py`, `equiv.py`, and `search.py` are still `NotImplementedError` stubs;
-`cegis.py`, `fuzz.py`, and `cost.py` don't exist yet; and the only test so far
-is `test_ir.py`. Two pieces of Phase 0 are still outstanding: the runnable proof
-that `x*2 ≡ x<<1`, and the `DECISION_LOG.md` entry explaining why that UNSAT
-result is a proof rather than just evidence.
+Phases 1 through 3 are done, well ahead of the calendar below. `interp.py` runs
+programs against the reference semantics; `encode.py` lifts them into Z3 and is
+cross-checked against the interpreter on 100,000 random program-and-input pairs
+plus deterministic shift edge cases; `equivalent()` proves `x+x ≡ x<<1` and
+hands back real counterexamples; and the brute-force search rediscovers `x & -x`
+for `isolate_rmb` and reports it optimal at length 2. That last result is the
+Phase 3 de-risk milestone, so the interpreter, encoder, and equivalence stack is
+proven sound. The independent `fuzz.py` oracle exists too, pulled forward from
+Phase 6. The suite is 49 tests, all green and ruff-clean.
+
+What's left from the early phases is writing, not code: the `DECISION_LOG.md`
+entries for the encoding and search choices (and the Phase 0 "why does UNSAT
+prove equivalence" entry), and a first `README.md` draft. `cegis.py` and
+`cost.py` still don't exist, since Phase 4 hasn't started.
 
 There's also a piece of housekeeping debt. Locally, `main` (the vault and
 config) and `origin/master` (this code) are unrelated histories, so `main`'s
@@ -59,6 +66,10 @@ encoder cross-check and the fuzzer never are.
 ## The calendar, phase by phase
 
 Roughly twelve and a half weeks, June through the end of August.
+
+As of June 9, Phases 1 through 3 and the Phase 6 fuzzer are already done, well
+ahead of the windows below; the windows are kept as the original plan for
+reference, and Phase 4 is the next live work.
 
 **Phase 0 close-out (Jun 5–7).** Three things land: a script you wrote yourself
 that proves `x*2 ≡ x<<1` comes back `unsat`, the `DECISION_LOG.md` entry on why
@@ -139,6 +150,6 @@ encoding.
 
 ## Checkpoints
 
-- [ ] **End of July:** the Phase 3 MVP works, and the stack is proven sound.
+- [x] **End of July:** the Phase 3 MVP works, and the stack is proven sound. (Hit June 9, weeks early.)
 - [ ] **Aug 21:** Phase 4 lands, or the degradation plan triggers.
 - [ ] **Aug 31:** the fuzzer is green, the report is reviewed, and it's done.

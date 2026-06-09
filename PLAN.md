@@ -64,7 +64,7 @@ words why `unsat` is a proof and not just evidence, written into `DECISION_LOG.m
 
 To do:
 
-- [ ] venv with `z3-solver` and `pytest`; confirm `python --version` is 3.11+ and `import z3` works
+- [x] venv with `z3-solver` and `pytest`; confirm `python --version` is 3.11+ and `import z3` works
 - [ ] Write the hello-world myself: assert the negation of `x*2 == x<<1` on an 8-bit `BitVec`, expect `unsat` (a `sat` means I flipped the assertion)
 - [ ] Write the "why is `unsat` a proof" entry in `DECISION_LOG.md`
 - [ ] Load the auto-sync hooks with `/hooks`, then commit the log entry
@@ -94,9 +94,9 @@ thousand random inputs, and check they agree.
 
 To do:
 
-- [ ] Finish `interp.py`'s `execute()`, masking to width and handling the `ASHR` sign-extend trap
-- [ ] Write the three specs (`popcount`, `absval`, `isolate_rmb`) plainly, no tricks
-- [ ] Cross-check each spec against a hand-built `Program` on 10k random inputs
+- [x] Finish `interp.py`'s `execute()`, masking to width and handling the `ASHR` sign-extend trap
+- [x] Write the three specs (`popcount`, `absval`, `isolate_rmb`) plainly, no tricks
+- [x] Cross-check each spec against a hand-built `Program` on 10k random inputs
 - [ ] First `README.md` draft, and log the IR and `ASHR` choices
 
 **Done when** `test_interp.py` is green and all three specs match their hand-built programs on 10k inputs.
@@ -123,10 +123,10 @@ assert the inputs equal and the outputs different, ask Z3, and read `unsat` as
 
 To do:
 
-- [ ] Encode each opcode, settling the shift and overflow questions in `notes/encodings/`
-- [ ] Build the random-program generator and run the 100k interpreter-vs-encoder cross-check
-- [ ] Write `equivalent()`, returning `Equivalent` or a `Counterexample`
-- [ ] Prove `x + x ≡ x << 1`, and confirm a wrong pair gives a counterexample that actually diverges
+- [x] Build the random-program generator and run the 100k interpreter-vs-encoder cross-check
+- [x] Write `equivalent()`, returning `Equivalent` or a `Counterexample`
+- [x] Prove `x + x ≡ x << 1`, and confirm a wrong pair gives a counterexample that actually diverges
+- [x] Encode each opcode (shift/overflow settled in code; the `notes/encodings/` writeup is still pending)
 
 **Done when** the cross-checks pass, `x + x ≡ x << 1` is equivalent, and a broken pair returns a real counterexample.
 
@@ -152,9 +152,9 @@ build CEGIS on top without wondering whether the foundation lies to me.
 
 To do:
 
-- [ ] Enumerate shortest-first, pruning dead code, undefined slots, and commutative duplicates
-- [ ] Check each candidate against the spec with `equivalent()`
-- [ ] Run it on `isolate_rmb` and confirm it returns `x & -x`, reported as optimal at length 2
+- [x] Enumerate shortest-first, pruning dead code, undefined slots, and commutative duplicates
+- [x] Check each candidate against the spec (exhaustive interpretation at 8-bit, not `equivalent()`)
+- [x] Run it on `isolate_rmb` and confirm it returns `x & -x`, reported as optimal at length 2
 - [ ] Log the enumeration order, the pruning rules, and what "canonical" means in the IR
 
 **Done when** `search.py` rediscovers `x & -x` for `isolate_rmb` and reports it as provably optimal at length 2. That's the de-risk checkpoint.

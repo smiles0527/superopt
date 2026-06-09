@@ -25,3 +25,11 @@ A running log of project milestones. Newest last.
   *Mathematical Logic for Computer Science*, to the references, and folded a
   two-track reading plan into the schedule, the textbooks alongside Phases 1–3 and
   Jha 2010 before Phase 4.
+- **June 9.** Implemented the Phase 1 through 3 core and verified it end to end.
+  `interp.py` runs the reference semantics; `encode.py` lifts programs to Z3,
+  cross-checked against the interpreter on 100,000 random cases plus deterministic
+  shift edge cases; `equiv.py` proves `x+x ≡ x<<1` and returns real
+  counterexamples; and `search.py` rediscovers `x & -x` for `isolate_rmb` and
+  reports it optimal at length 2, hitting the Phase 3 de-risk milestone. Also
+  landed `fuzz.py`, the independent oracle, ahead of its Phase 6 slot. The suite
+  is 49 tests, green and ruff-clean.
