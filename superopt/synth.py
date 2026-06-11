@@ -56,6 +56,9 @@ def synthesize_constants(
         raise ValueError(f"width mismatch: {sketch.width} != {spec.width}")
     input_vars, _, _ = encode_sketch(sketch)
     arity = len(input_vars)
+    spec_arity = len(encode_sketch(spec)[0])
+    if spec_arity != arity:
+        raise ValueError(f"arity mismatch: sketch has {arity}, spec has {spec_arity}")
     bound = 1 << sketch.width
     rng = random.Random(seed)
     examples: list[tuple[int, ...]] = [

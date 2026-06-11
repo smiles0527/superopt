@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from superopt.equiv import Equivalent, equivalent
 from superopt.fuzz import fuzz
 from superopt.interp import execute
@@ -85,3 +87,13 @@ def test_synthesized_program_passes_independent_fuzzer():
     result = synthesize_constants(_and_sketch(32), _mask_spec(32), seed=0)
     assert result is not None
     assert fuzz(result, keep_odd_bits, trials=20_000, seed=1) is None
+
+
+def test_arity_mismatch_raises():
+    spec = Program(
+        8,
+        (Instruction(Op.AND, (InputRef(1), Const(0xAA))),),
+        ResultRef(0),
+    )
+    with pytest.raises(ValueError, match="arity mismatch"):
+        synthesize_constants(_and_sketch(8), spec)
