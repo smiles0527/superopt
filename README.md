@@ -3,7 +3,8 @@
 A superoptimizer for short, loop-free integer and bitwise routines. Hand it a
 small function and it searches for the shortest equivalent program, then proves
 there's nothing shorter. Not "a bit faster," but provably optimal under a fixed
-instruction set.
+instruction set. For the from-scratch version that assumes no background, read
+[docs/explainer.md](docs/explainer.md).
 
 ## The idea
 
@@ -11,7 +12,7 @@ An ordinary compiler at `-O3` applies a big bag of heuristic rewrites. It makes
 your code faster but never claims it found the best version. Superoptimization,
 going back to Massalin in 1987, asks the harder question: out of *all* programs,
 which is the shortest one that computes this function? The classic party trick
-is rediscovering something like `x & (x - 1)` (clear the lowest set bit) from
+is rediscovering something like `x & -x` (isolate the lowest set bit) from
 nothing, and certifying that no shorter sequence does the same job.
 
 The catch is the word "equivalent." Two programs are equivalent only if they
@@ -47,15 +48,34 @@ correct, something brute-force enumeration could never stumble onto.
 
 ## Status and scope
 
-Early days. The repo is set up and the theory is written up; the optimizer
-itself is still ahead of me. The build goes in phases: Z3 hello-world, then the
-IR and interpreter, the encoder and equivalence check, brute-force search, then
-CEGIS, with a stretch goal of a latency-based cost model or measured wins
-against `-O3`.
+Phases 1 through 3 and the independent fuzzer are done and verified:
+
+- the reference interpreter,
+- the Z3 encoder, cross-checked against the interpreter on 100,000 random cases,
+- the equivalence checker, with counterexample extraction,
+- brute-force search, which rediscovers `x & -x` for isolate-rightmost-bit and
+  proves it optimal at length 2 (the de-risk milestone),
+- a random-input fuzzer written without reusing the encoder.
+
+The suite is 49 tests, green. Phase 4 (CEGIS, for synthesizing constants and
+scaling to 32-bit) is next, with a stretch goal of a latency cost model or
+measured wins against `-O3`.
 
 Deliberately out of scope for now: floating point, memory and loads/stores,
 loops and branches, and multi-output programs. Each one is its own research
 project; the single-output, loop-free, integer case comes first.
+
+## Run it
+
+```bash
+python -m venv venv
+venv\Scripts\activate        # Windows
+# source venv/bin/activate   # macOS / Linux
+pip install -e ".[dev]"
+pytest
+```
+
+`pytest` should report 49 passed.
 
 ## Notes
 
@@ -68,5 +88,14 @@ repository, so the Obsidian auto-sync churn never clutters this one's history:
 They're also checked out locally at `notes/` (gitignored here) as an Obsidian
 vault. Edit them there; the `obsidian-git` plugin syncs them to the notes repo
 on its own. A fresh clone of this project that wants the notes should also
-`git clone` the notes repo into `notes/`. A clean, read-only snapshot of the
-notes lives under `docs/notes/` so they're browsable here on GitHub too.
+`git clone` the notes repo into `notes/`. A clean, read-only snapshot lives
+under [docs/notes/](docs/notes/), browsable on GitHub, alongside the
+[plain-English explainer](docs/explainer.md) and the
+[references](docs/references.md).
+
+## Honest framing
+
+The synthesis technique here (CEGIS, component-based encoding) isn't novel. It
+goes back to Jha et al. 2010 and Solar-Lezama's sketching work, both cited in
+the references. What's mine is the IR design, the encoder, the implementation,
+and the evaluation.
