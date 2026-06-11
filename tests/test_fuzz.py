@@ -53,3 +53,17 @@ def test_different_seeds_share_no_state() -> None:
     program = _isolate_rmb_program()
     assert fuzz(program, isolate_rmb, trials=10_000, seed=1) is None
     assert fuzz(program, isolate_rmb, trials=10_000, seed=2) is None
+
+
+def test_arity_follows_spec_not_program() -> None:
+    def first_of_two(a: int, b: int, width: int) -> int:
+        return a & ((1 << width) - 1)
+
+    program = Program(
+        width=WIDTH,
+        instructions=(Instruction(Op.NOT, (InputRef(0),)),),
+        output=ResultRef(0),
+    )
+    result = fuzz(program, first_of_two, trials=200, seed=3)
+    assert isinstance(result, Divergence)
+    assert len(result.inputs) == 2

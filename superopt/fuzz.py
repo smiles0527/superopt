@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+import inspect
 import random
 from collections.abc import Callable
 from dataclasses import dataclass
 
 from superopt.interp import execute
-from superopt.ir import InputRef, Program
+from superopt.ir import Program
 
 
 @dataclass(frozen=True)
@@ -15,16 +16,13 @@ class Divergence:
     spec_output: int
 
 
-def _arity(program: Program) -> int:
-    indices = [
-        operand.index
-        for instruction in program.instructions
-        for operand in instruction.operands
-        if isinstance(operand, InputRef)
-    ]
-    if isinstance(program.output, InputRef):
-        indices.append(program.output.index)
-    return max(indices) + 1 if indices else 1
+def _infer_arity(spec: Callable[..., int]) -> int:
+    try:
+        params = inspect.signature(spec).parameters
+    except (TypeError, ValueError):
+        return 1
+    count = sum(1 for name in params if name != "width")
+    return count if count >= 1 else 1
 
 
 def fuzz(
@@ -34,7 +32,7 @@ def fuzz(
     trials: int = 100_000,
     seed: int = 0,
 ) -> Divergence | None:
-    arity = _arity(program)
+    arity = _infer_arity(spec)
     bound = 1 << program.width
     rng = random.Random(seed)
     for _ in range(trials):
