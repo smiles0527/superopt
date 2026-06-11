@@ -4,7 +4,7 @@ from typing import assert_never
 
 from z3 import BitVec, BitVecRef, BitVecVal, LShR
 
-from superopt.ir import Const, InputRef, Op, Operand, Program, ResultRef
+from superopt.ir import Const, Hole, InputRef, Op, Operand, Program, ResultRef
 
 
 def _input_arity(program: Program) -> int:
@@ -45,9 +45,23 @@ def _apply(op: Op, args: list[BitVecRef]) -> BitVecRef:
     assert_never(op)
 
 
-def encode(program: Program) -> tuple[list[BitVecRef], BitVecRef]:
+def _hole_ids(program: Program) -> list[int]:
+    ids: set[int] = set()
+    for instruction in program.instructions:
+        for operand in instruction.operands:
+            if isinstance(operand, Hole):
+                ids.add(operand.id)
+    if isinstance(program.output, Hole):
+        ids.add(program.output.id)
+    return sorted(ids)
+
+
+def encode_sketch(
+    program: Program,
+) -> tuple[list[BitVecRef], dict[int, BitVecRef], BitVecRef]:
     width = program.width
     input_vars = [BitVec(f"in{i}", width) for i in range(_input_arity(program))]
+    hole_vars = {h: BitVec(f"hole{h}", width) for h in _hole_ids(program)}
     results: list[BitVecRef] = []
 
     def value(operand: Operand) -> BitVecRef:
@@ -58,10 +72,17 @@ def encode(program: Program) -> tuple[list[BitVecRef], BitVecRef]:
                 return BitVecVal(v, width)
             case ResultRef(index=i):
                 return results[i]
+            case Hole(id=h):
+                return hole_vars[h]
         assert_never(operand)
 
     for instruction in program.instructions:
         args = [value(operand) for operand in instruction.operands]
         results.append(_apply(instruction.op, args))
 
-    return input_vars, value(program.output)
+    return input_vars, hole_vars, value(program.output)
+
+
+def encode(program: Program) -> tuple[list[BitVecRef], BitVecRef]:
+    input_vars, _, output = encode_sketch(program)
+    return input_vars, output
