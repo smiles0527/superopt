@@ -1,10 +1,10 @@
 # Program synthesis and the constants problem
 
-While equivalence checking confirms a program that I already possess, synthesis takes the problem in the other direction-finding a program that fulfills a given specification. This note briefly introduces the synthesis problem and specifically addresses the issue of constants which makes the bruteforce enumeration fall apart, the exact issue that motivates the use of SMT solvers in [[04-cegis]].
+While equivalence checking confirms a program that I already possess, synthesis takes the problem in the other direction and finds a program that fulfills a given specification. This note briefly introduces the synthesis problem and specifically addresses the issue of constants which makes the bruteforce enumeration fall apart, the exact issue that motivates the use of SMT solvers in [[04-cegis]].
 
 ## The synthesis problem
 
-The synthesis problem is to find a program $P$ from a given space of allowed programs, that satisfy a specification-in this case, a reference function provided as either a Python function or a formula of SMT logic-for all possible inputs. For the purposes of this project, the space of allowed programs is defined as a sequence of instructions executed on the selected instruction set without control flow, of a given length, with each instruction taking inputs that are wired to either direct inputs to the program or to the results from preceding instructions.
+The synthesis problem is to find a program $P$ from a given space of allowed programs, that satisfy a specification, in this case a reference function provided as either a Python function or a formula of SMT logic, for all possible inputs. For the purposes of this project, the space of allowed programs is defined as a sequence of instructions executed on the selected instruction set without control flow, of a given length, with each instruction taking inputs that are wired to either direct inputs to the program or to the results from preceding instructions.
 
 ## Enumerate and verify, the Phase 3 MVP
 
@@ -57,4 +57,4 @@ This is the major reason why the SMT-based CEGIS approach used in Phase 4, is mo
 
 ## The catch that motivates CEGIS
 
-With the introduction of unknowns for both constants and the program's instruction wiring, the problem is now framed as: "does there exist a program $P$ such that for all inputs $x$, $P(x)$ equals the reference function?" This is a $\exists x. P(x) = F(x)$ statement, the alternating quantifier structure of which is notoriously difficult for solvers to handle efficiently. CEGIS is the strategy to bypass this expensive "attack" on the quantifier structure by repeatedly transforming the problem into a cheaper, quantifier-free one. Proceed to [[04-cegis]].
+With the introduction of unknowns for both constants and the program's instruction wiring, the problem is now framed as: "does there exist a program $P$ such that for all inputs $x$, $P(x)$ equals the reference function?" This is a $\exists P. \forall x. P(x) = F(x)$ statement, the alternating quantifier structure of which is notoriously difficult for solvers to handle efficiently. CEGIS is the strategy to bypass this expensive "attack" on the quantifier structure by repeatedly transforming the problem into a cheaper, quantifier-free one. Proceed to [[04-cegis]].

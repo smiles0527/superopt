@@ -10,7 +10,7 @@
 | latency             | smallest duration on the critical dependency chain      | This requires latency values for each operation, and it's an extension of Phase 5. |
 | throughput, code size, energy | Other measures of code quality                     | It is very likely that these measures result in different optimal programs. |
 
-A sequence of two instructions, one of them being a slow multiply instruction, can result in a slower execution when compared with a sequence of three shift/add instructions. However, the former wins in instruction count. This is why, if a metric is not stated explicitly, "optimal" is meaningless. In this project, the metric used is the minimal number of instructions (Phases 3 & 4), assuming instructions const take zero cycles and focusing only on instruction count before analyzing latencies (Phase 5).
+A sequence of two instructions, one of them being a slow multiply instruction, can result in a slower execution when compared with a sequence of three shift/add instructions. However, the former wins in instruction count. This is why, if a metric is not stated explicitly, "optimal" is meaningless. In this project, the metric used is the minimal number of instructions (Phases 3 & 4), assuming `const` instructions take zero cycles and focusing only on instruction count before analyzing latencies (Phase 5).
 
 ## What constitutes a provable optimality?
 
