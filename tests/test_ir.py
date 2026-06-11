@@ -32,4 +32,6 @@ def test_build_isolate_rmb_candidate():
 
 def test_program_is_hashable():
     prog = Program(8, (Instruction(Op.NOT, (InputRef(0),)),), ResultRef(0))
-    assert hash(prog) == hash(prog)
+    twin = Program(8, (Instruction(Op.NOT, (InputRef(0),)),), ResultRef(0))
+    assert hash(prog) == hash(twin)
+    assert len({prog, twin}) == 1
