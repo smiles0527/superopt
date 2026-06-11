@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from superopt.ir import Const, Hole, InputRef, Instruction, Op, Program, ResultRef
-from superopt.synth import _fill
+from superopt.synth import _fill, _finite_synthesis
 
 
 def _odd_mask(width: int) -> int:
@@ -39,3 +39,13 @@ def test_fill_replaces_holes_with_constants():
         (Instruction(Op.AND, (InputRef(0), Const(0xAA))),),
         ResultRef(0),
     )
+
+
+def test_finite_synthesis_pins_the_constant():
+    holes = _finite_synthesis(_and_sketch(8), _mask_spec(8), [(0xFF,)])
+    assert holes == {0: 0xAA}
+
+
+def test_finite_synthesis_returns_none_when_unsatisfiable():
+    holes = _finite_synthesis(_or_sketch(8), _mask_spec(8), [(0xFF,)])
+    assert holes is None
