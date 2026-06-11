@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from superopt.equiv import Equivalent, equivalent
+from superopt.fuzz import fuzz
 from superopt.interp import execute
 from superopt.ir import Const, Hole, InputRef, Instruction, Op, Program, ResultRef
 from superopt.synth import _fill, _finite_synthesis, synthesize_constants
@@ -75,3 +76,12 @@ def test_synthesizes_wide_mask_at_32_bit():
 def test_returns_none_when_no_constant_works():
     result = synthesize_constants(_or_sketch(8), _mask_spec(8), seed=0)
     assert result is None
+
+
+def test_synthesized_program_passes_independent_fuzzer():
+    def keep_odd_bits(x: int, width: int) -> int:
+        return x & _odd_mask(width)
+
+    result = synthesize_constants(_and_sketch(32), _mask_spec(32), seed=0)
+    assert result is not None
+    assert fuzz(result, keep_odd_bits, trials=20_000, seed=1) is None
