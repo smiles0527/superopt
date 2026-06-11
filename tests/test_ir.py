@@ -1,6 +1,15 @@
 from __future__ import annotations
 
-from superopt.ir import ARITY, Const, InputRef, Instruction, Op, Program, ResultRef
+from superopt.ir import (
+    ARITY,
+    Const,
+    Hole,
+    InputRef,
+    Instruction,
+    Op,
+    Program,
+    ResultRef,
+)
 
 
 def test_arity_declared_for_every_op():
@@ -35,3 +44,11 @@ def test_program_is_hashable():
     twin = Program(8, (Instruction(Op.NOT, (InputRef(0),)),), ResultRef(0))
     assert hash(prog) == hash(twin)
     assert len({prog, twin}) == 1
+
+
+def test_hole_is_a_distinct_operand():
+    assert Hole(0) != InputRef(0)
+    assert Hole(0) != Const(0)
+    assert Hole(0) != ResultRef(0)
+    assert Hole(2).id == 2
+    assert hash(Hole(1)) == hash(Hole(1))

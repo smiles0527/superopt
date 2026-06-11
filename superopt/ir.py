@@ -46,9 +46,14 @@ class Const:
 @dataclass(frozen=True)
 class ResultRef:
     index: int
-    
 
-Operand = InputRef | Const | ResultRef
+
+@dataclass(frozen=True)
+class Hole:
+    id: int
+
+
+Operand = InputRef | Const | ResultRef | Hole
 
 
 @dataclass(frozen=True)
