@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+from superopt.equiv import Equivalent, equivalent
+from superopt.interp import execute
 from superopt.ir import Const, Hole, InputRef, Instruction, Op, Program, ResultRef
-from superopt.synth import _fill, _finite_synthesis
+from superopt.synth import _fill, _finite_synthesis, synthesize_constants
 
 
 def _odd_mask(width: int) -> int:
@@ -49,3 +51,27 @@ def test_finite_synthesis_pins_the_constant():
 def test_finite_synthesis_returns_none_when_unsatisfiable():
     holes = _finite_synthesis(_or_sketch(8), _mask_spec(8), [(0xFF,)])
     assert holes is None
+
+
+def test_synthesizes_wide_mask_at_8_bit():
+    spec = _mask_spec(8)
+    result = synthesize_constants(_and_sketch(8), spec, seed=0)
+    assert result is not None
+    assert isinstance(equivalent(result, spec), Equivalent)
+    for x in range(256):
+        assert execute(result, (x,)) == execute(spec, (x,))
+
+
+def test_synthesizes_wide_mask_at_32_bit():
+    spec = _mask_spec(32)
+    result = synthesize_constants(_and_sketch(32), spec, seed=0)
+    assert result is not None
+    assert isinstance(equivalent(result, spec), Equivalent)
+    const = result.instructions[0].operands[1]
+    assert isinstance(const, Const)
+    assert const.value == 0xAAAAAAAA
+
+
+def test_returns_none_when_no_constant_works():
+    result = synthesize_constants(_or_sketch(8), _mask_spec(8), seed=0)
+    assert result is None

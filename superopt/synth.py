@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import random
+
 from z3 import BitVecVal, Solver, sat, substitute
 
 from superopt.encode import encode_sketch
+from superopt.equiv import Equivalent, equivalent
 from superopt.interp import execute
 from superopt.ir import Const, Hole, Instruction, Operand, Program
 
@@ -40,3 +43,31 @@ def _finite_synthesis(
         h: model.eval(var, model_completion=True).as_long()
         for h, var in hole_vars.items()
     }
+
+
+def synthesize_constants(
+    sketch: Program,
+    spec: Program,
+    *,
+    seed: int = 0,
+    max_iters: int = 64,
+) -> Program | None:
+    if sketch.width != spec.width:
+        raise ValueError(f"width mismatch: {sketch.width} != {spec.width}")
+    input_vars, _, _ = encode_sketch(sketch)
+    arity = len(input_vars)
+    bound = 1 << sketch.width
+    rng = random.Random(seed)
+    examples: list[tuple[int, ...]] = [
+        tuple(rng.randrange(bound) for _ in range(arity))
+    ]
+    for _ in range(max_iters):
+        holes = _finite_synthesis(sketch, spec, examples)
+        if holes is None:
+            return None
+        filled = _fill(sketch, holes)
+        result = equivalent(filled, spec)
+        if isinstance(result, Equivalent):
+            return filled
+        examples.append(result.inputs)
+    raise RuntimeError("CEGIS did not converge within max_iters")
