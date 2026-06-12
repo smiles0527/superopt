@@ -187,12 +187,24 @@ Before starting I read Jha, Gulwani, Seshia, and Tiwari (2010) twice, the CEGIS
 chapter of Solar-Lezama's thesis, and skim Souper's README for reference, not to
 copy.
 
+The work splits in two. The first slice, 4a, is constants on a fixed sketch, and
+it's done. A `Hole` operand stands in for an unknown constant, the encoder turns
+each hole into a free `BitVec`, and a CEGIS loop solves for it over a few example
+inputs, verifies the fit against the spec over all inputs, and refines on any
+counterexample. Pointed at `x & C` it recovered `0xAAAAAAAA` over every 32-bit
+input, checked by both `equivalent()` and the independent fuzzer, so the
+free-constant insight is proven before any wiring exists. The second slice, 4b, is
+the wiring itself, where the location variables let Z3 choose the program rather
+than just fill a blank in one I handed it. The same loop drives it; what's new is
+the component connection encoding and its well-formedness constraints.
+
 To do:
 
-- [ ] Read Jha 2010 twice, with notes in `notes/papers/jha-2010.md`
+- [x] Read Jha 2010 twice, with notes in `notes/papers/jha-2010.md`
+- [x] Add a `Hole` operand and a hole-aware encoder, treating constants as free `BitVec` variables, never enumerated
+- [x] Build the CEGIS loop on a fixed sketch and confirm it recovers a 32-bit constant, verified by equiv and the fuzzer
 - [ ] Derive the location-variable and well-formedness constraints on paper, then encode them in `cegis.py`
-- [ ] Build the synth/verify loop; treat constants as free `BitVec` variables, never enumerated
-- [ ] Get it working at 8-bit on `isolate_rmb`, scale to 32-bit, then synthesize one real Hacker's Delight function with a constant
+- [ ] Extend the loop to choose the wiring: 8-bit on `isolate_rmb`, scale to 32-bit, then one real Hacker's Delight function with a constant
 - [ ] Log the component design, the constraint derivation with the by-hand trace, and the free-constant insight
 
 **Done when** a real Hacker's Delight function, constant and all, is synthesized over every 32-bit input and verified against the spec.

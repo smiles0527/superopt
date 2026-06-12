@@ -33,3 +33,16 @@ A running log of project milestones. Newest last.
   reports it optimal at length 2, hitting the Phase 3 de-risk milestone. Also
   landed `fuzz.py`, the independent oracle, ahead of its Phase 6 slot. The suite
   is 49 tests, green and ruff-clean.
+- **June 10.** Tightened the earlier phases and built the first slice of Phase 4.
+  The polish came first: `fuzz.py` now takes its input arity from the spec rather
+  than the candidate program, so a program that ignores an argument can no longer
+  shrink the fuzz domain and hide a divergence; a Program-hashing test went in; and
+  the synthesis quantifier in the theory notes got corrected. Then Phase 4a,
+  constant synthesis on a fixed sketch. A new `Hole` operand stands in for an
+  unknown constant, `encode.py` lifts each hole to a free `BitVec`, and a CEGIS
+  loop in `synth.py` solves for it over a handful of example inputs, verifies the
+  fit against the spec over all inputs, and feeds any counterexample back in.
+  Pointed at `x & C` it recovered `0xAAAAAAAA` across every 32-bit input, confirmed
+  independently by `equivalent()` and the fuzzer. That is the free-constant insight
+  working end to end, a magic number the solver found on its own instead of one I
+  enumerated. The suite is 61 tests, green and ruff-clean.
