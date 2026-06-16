@@ -18,7 +18,7 @@ def _input_arity(program: Program) -> int:
     return arity
 
 
-def _apply(op: Op, args: list[BitVecRef]) -> BitVecRef:
+def apply(op: Op, args: list[BitVecRef]) -> BitVecRef:
     match op:
         case Op.ADD:
             return args[0] + args[1]
@@ -78,7 +78,7 @@ def encode_sketch(
 
     for instruction in program.instructions:
         args = [value(operand) for operand in instruction.operands]
-        results.append(_apply(instruction.op, args))
+        results.append(apply(instruction.op, args))
 
     return input_vars, hole_vars, value(program.output)
 
