@@ -99,3 +99,27 @@ def test_recovers_mask_constant_in_wiring():
         return x & 0x55
 
     assert fuzz(result, keep_even_bits, trials=20_000, seed=1) is None
+
+
+def _shift_mask_spec(width: int, amount: int, mask: int) -> Program:
+    return Program(
+        width,
+        (
+            Instruction(Op.LSHR, (InputRef(0), Const(amount))),
+            Instruction(Op.AND, (ResultRef(0), Const(mask))),
+        ),
+        ResultRef(1),
+    )
+
+
+def test_synthesizes_shift_then_mask():
+    spec = _shift_mask_spec(8, 1, 0x55)
+    library = Library(ops=(Op.LSHR, Op.AND), n_constants=2)
+    result = synthesize(spec, library, seed=0)
+    assert result is not None
+    assert isinstance(equivalent(result, spec), Equivalent)
+
+    def shifted_mask(x: int, width: int) -> int:
+        return (x >> 1) & 0x55
+
+    assert fuzz(result, shifted_mask, trials=20_000, seed=1) is None
