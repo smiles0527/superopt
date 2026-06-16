@@ -1,7 +1,22 @@
 from __future__ import annotations
 
-from superopt.cegis import Library, _Assignment, _decode
+from superopt.benchmarks.isolate_rmb import isolate_rmb
+from superopt.cegis import Library, _Assignment, _decode, synthesize
+from superopt.equiv import Equivalent, equivalent
+from superopt.fuzz import fuzz
+from superopt.interp import execute
 from superopt.ir import Const, InputRef, Instruction, Op, Program, ResultRef
+
+
+def _isolate_rmb_spec(width: int) -> Program:
+    return Program(
+        width,
+        (
+            Instruction(Op.NEG, (InputRef(0),)),
+            Instruction(Op.AND, (InputRef(0), ResultRef(0))),
+        ),
+        ResultRef(1),
+    )
 
 
 def test_decode_recovers_isolate_rmb_wiring():
@@ -35,3 +50,14 @@ def test_decode_inlines_a_constant_slot():
         (Instruction(Op.AND, (InputRef(0), Const(0x55))),),
         ResultRef(0),
     )
+
+
+def test_synthesizes_isolate_rmb_at_8_bit():
+    spec = _isolate_rmb_spec(8)
+    library = Library(ops=(Op.NEG, Op.AND))
+    result = synthesize(spec, library, seed=0)
+    assert result is not None
+    assert isinstance(equivalent(result, spec), Equivalent)
+    for x in range(256):
+        assert execute(result, (x,)) == execute(spec, (x,))
+    assert fuzz(result, isolate_rmb, trials=20_000, seed=1) is None
