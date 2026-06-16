@@ -70,3 +70,9 @@ def test_synthesizes_isolate_rmb_at_32_bit():
     assert result is not None
     assert isinstance(equivalent(result, spec), Equivalent)
     assert fuzz(result, isolate_rmb, trials=20_000, seed=1) is None
+
+
+def test_returns_none_when_library_cannot_match():
+    spec = _isolate_rmb_spec(8)
+    library = Library(ops=(Op.AND,))
+    assert synthesize(spec, library, seed=0) is None
