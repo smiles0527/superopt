@@ -61,3 +61,12 @@ def test_synthesizes_isolate_rmb_at_8_bit():
     for x in range(256):
         assert execute(result, (x,)) == execute(spec, (x,))
     assert fuzz(result, isolate_rmb, trials=20_000, seed=1) is None
+
+
+def test_synthesizes_isolate_rmb_at_32_bit():
+    spec = _isolate_rmb_spec(32)
+    library = Library(ops=(Op.NEG, Op.AND))
+    result = synthesize(spec, library, seed=0)
+    assert result is not None
+    assert isinstance(equivalent(result, spec), Equivalent)
+    assert fuzz(result, isolate_rmb, trials=20_000, seed=1) is None
