@@ -76,3 +76,26 @@ def test_returns_none_when_library_cannot_match():
     spec = _isolate_rmb_spec(8)
     library = Library(ops=(Op.AND,))
     assert synthesize(spec, library, seed=0) is None
+
+
+def _and_const_spec(width: int, mask: int) -> Program:
+    return Program(
+        width,
+        (Instruction(Op.AND, (InputRef(0), Const(mask))),),
+        ResultRef(0),
+    )
+
+
+def test_recovers_mask_constant_in_wiring():
+    spec = _and_const_spec(8, 0x55)
+    library = Library(ops=(Op.AND,), n_constants=1)
+    result = synthesize(spec, library, seed=0)
+    assert result is not None
+    assert isinstance(equivalent(result, spec), Equivalent)
+    operands = result.instructions[0].operands
+    assert Const(0x55) in operands
+
+    def keep_even_bits(x: int, width: int) -> int:
+        return x & 0x55
+
+    assert fuzz(result, keep_even_bits, trials=20_000, seed=1) is None
