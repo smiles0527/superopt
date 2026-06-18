@@ -203,9 +203,10 @@ To do:
 - [x] Read Jha 2010 twice, with notes in `notes/papers/jha-2010.md`
 - [x] Add a `Hole` operand and a hole-aware encoder, treating constants as free `BitVec` variables, never enumerated
 - [x] Build the CEGIS loop on a fixed sketch and confirm it recovers a 32-bit constant, verified by equiv and the fuzzer
-- [ ] Derive the location-variable and well-formedness constraints on paper, then encode them in `cegis.py`
-- [ ] Extend the loop to choose the wiring: 8-bit on `isolate_rmb`, scale to 32-bit, then one real Hacker's Delight function with a constant
-- [ ] Log the component design, the constraint derivation with the by-hand trace, and the free-constant insight
+- [x] Derive the location-variable and well-formedness constraints, then encode them in `cegis.py`
+- [x] Extend the loop to choose the wiring: rediscovers `x & -x` at 8 and 32 bits and recovers a mask and a shift amount on its own
+- [ ] Synthesize a full Hacker's Delight function with constants: SWAR popcount is the measured frontier, it does not converge even with bitvector locations, symmetry breaking, and pinned shifts (see DECISION_LOG); the rungs stay as `slow` tests
+- [x] Log the component design, the constraint derivation, and the free-constant insight (DECISION_LOG, Phase 4a and 4b)
 
 **Done when** a real Hacker's Delight function, constant and all, is synthesized over every 32-bit input and verified against the spec.
 

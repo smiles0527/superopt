@@ -46,3 +46,19 @@ A running log of project milestones. Newest last.
   independently by `equivalent()` and the fuzzer. That is the free-constant insight
   working end to end, a magic number the solver found on its own instead of one I
   enumerated. The suite is 61 tests, green and ruff-clean.
+- **June 17.** Built Phase 4b, component synthesis, the intellectual core. `cegis.py`
+  encodes a program as Jha 2010 location variables: each operation gets an output
+  line and input lines, well-formedness keeps the wiring an acyclic
+  single-definition DAG, and a connection constraint ties each input to the line it
+  reads. The 4a CEGIS loop drives it, now solving for the wiring and the constants
+  at once, and a decoder reads the solver's model back into a `Program`. It
+  rediscovers `x & -x` from a bag of NEG and AND at 8 and 32 bits, recovers a mask
+  constant inside a wiring, and even invents a shift amount, each checked by both the
+  proof and the fuzzer. Three levers went in to make the search finish: bit-vector
+  locations, symmetry breaking on interchangeable parts, and pinning structural
+  constants. The honest result is a measured frontier. Full SWAR popcount does not
+  converge even with every lever, because the per-round synthesis cost explodes as
+  counterexamples accumulate, running 0.06s up to 27s over five examples and then
+  falling off a cliff. The two popcount rungs stay marked `slow` and deselected,
+  documenting the wall; the seven that pass prove the technique. The suite runs 68
+  green by default, ruff-clean.
