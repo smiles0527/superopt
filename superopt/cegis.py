@@ -4,15 +4,16 @@ import random
 from dataclasses import dataclass
 
 from z3 import (
+    UGE,
+    ULE,
+    ULT,
     And,
-    ArithRef,
     BitVec,
     BitVecRef,
     BitVecVal,
     BoolRef,
     Distinct,
     Implies,
-    Int,
     Solver,
     sat,
 )
@@ -30,11 +31,16 @@ from superopt.ir import (
     ResultRef,
 )
 
+COMMUTATIVE: frozenset[Op] = frozenset(
+    {Op.ADD, Op.MUL, Op.AND, Op.OR, Op.XOR}
+)
+
 
 @dataclass(frozen=True)
 class Library:
     ops: tuple[Op, ...]
     n_constants: int = 0
+    fixed_constants: tuple[int, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -48,7 +54,7 @@ def _decode(
     assignment: _Assignment, library: Library, n_inputs: int, width: int
 ) -> Program:
     ops = library.ops
-    n_consts = library.n_constants
+    n_consts = library.n_constants + len(library.fixed_constants)
     n_lines = n_inputs + n_consts + len(ops)
     order = sorted(range(len(ops)), key=lambda k: assignment.lo[k])
     line_to_result = {assignment.lo[k]: pos for pos, k in enumerate(order)}
@@ -71,8 +77,9 @@ def _decode(
 
 
 def _wellformed(
-    lo: dict[int, ArithRef],
-    li: dict[tuple[int, int], ArithRef],
+    ops: tuple[Op, ...],
+    lo: dict[int, BitVecRef],
+    li: dict[tuple[int, int], BitVecRef],
     n_inputs: int,
     n_consts: int,
     n_lines: int,
@@ -80,23 +87,31 @@ def _wellformed(
     first_op_line = n_inputs + n_consts
     clauses = []
     for var in lo.values():
-        clauses.append(var >= first_op_line)
-        clauses.append(var < n_lines)
+        clauses.append(UGE(var, first_op_line))
+        clauses.append(ULT(var, n_lines))
     for var in li.values():
-        clauses.append(var >= 0)
-        clauses.append(var < n_lines)
+        clauses.append(ULT(var, n_lines))
     op_lines = list(lo.values())
     if len(op_lines) >= 2:
         clauses.append(Distinct(*op_lines))
     for (k, _j), var in li.items():
-        clauses.append(var < lo[k])
+        clauses.append(ULT(var, lo[k]))
+    same_op: dict[Op, list[int]] = {}
+    for k, op in enumerate(ops):
+        same_op.setdefault(op, []).append(k)
+    for indices in same_op.values():
+        for a, b in zip(indices, indices[1:], strict=False):
+            clauses.append(ULT(lo[a], lo[b]))
+    for k, op in enumerate(ops):
+        if op in COMMUTATIVE and ARITY[op] == 2:
+            clauses.append(ULE(li[(k, 0)], li[(k, 1)]))
     return And(*clauses)
 
 
 def _example(
     ops: tuple[Op, ...],
-    lo: dict[int, ArithRef],
-    li: dict[tuple[int, int], ArithRef],
+    lo: dict[int, BitVecRef],
+    li: dict[tuple[int, int], BitVecRef],
     consts: dict[int, BitVecRef],
     inputs: tuple[int, ...],
     expected: int,
@@ -142,17 +157,23 @@ def _finite_synthesis(
     width: int,
 ) -> _Assignment | None:
     ops = library.ops
-    n_consts = library.n_constants
+    n_free = library.n_constants
+    fixed = library.fixed_constants
+    n_consts = n_free + len(fixed)
     n_lines = n_inputs + n_consts + len(ops)
-    lo = {k: Int(f"lo_{k}") for k in range(len(ops))}
+    loc_width = max(1, (n_lines - 1).bit_length())
+    lo = {k: BitVec(f"lo_{k}", loc_width) for k in range(len(ops))}
     li = {
-        (k, j): Int(f"li_{k}_{j}")
+        (k, j): BitVec(f"li_{k}_{j}", loc_width)
         for k, op in enumerate(ops)
         for j in range(ARITY[op])
     }
-    consts = {s: BitVec(f"c_{s}", width) for s in range(n_consts)}
+    free_consts = {s: BitVec(f"c_{s}", width) for s in range(n_free)}
+    consts: dict[int, BitVecRef] = dict(free_consts)
+    for s, value in enumerate(fixed):
+        consts[n_free + s] = BitVecVal(value, width)
     solver = Solver()
-    solver.add(_wellformed(lo, li, n_inputs, n_consts, n_lines))
+    solver.add(_wellformed(ops, lo, li, n_inputs, n_consts, n_lines))
     for e, inp in enumerate(examples):
         expected = execute(spec, inp)
         solver.add(
@@ -164,13 +185,16 @@ def _finite_synthesis(
     if solver.check() != sat:
         return None
     model = solver.model()
+    const_values = {
+        s: model.eval(free_consts[s], model_completion=True).as_long()
+        for s in free_consts
+    }
+    for s, value in enumerate(fixed):
+        const_values[n_free + s] = value
     return _Assignment(
         lo={k: model.eval(lo[k], model_completion=True).as_long() for k in lo},
         li={kj: model.eval(li[kj], model_completion=True).as_long() for kj in li},
-        consts={
-            s: model.eval(consts[s], model_completion=True).as_long()
-            for s in consts
-        },
+        consts=const_values,
     )
 
 
