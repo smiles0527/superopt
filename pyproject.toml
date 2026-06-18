@@ -21,6 +21,8 @@ superopt = ["py.typed"]
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]
+addopts = "-m 'not slow'"
+markers = ["slow: long-running synthesis at the frontier, deselected by default"]
 
 [tool.ruff]
 line-length = 88

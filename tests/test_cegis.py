@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import pytest
+
 from superopt.benchmarks.isolate_rmb import isolate_rmb
+from superopt.benchmarks.popcount import popcount
 from superopt.cegis import Library, _Assignment, _decode, synthesize
 from superopt.equiv import Equivalent, equivalent
 from superopt.fuzz import fuzz
@@ -123,3 +126,54 @@ def test_synthesizes_shift_then_mask():
         return (x >> 1) & 0x55
 
     assert fuzz(result, shifted_mask, trials=20_000, seed=1) is None
+
+
+def _popcount_spec(width: int) -> Program:
+    instructions = [Instruction(Op.AND, (InputRef(0), Const(1)))]
+    acc = ResultRef(0)
+    nxt = 1
+    for i in range(1, width):
+        instructions.append(Instruction(Op.LSHR, (InputRef(0), Const(i))))
+        shifted = ResultRef(nxt)
+        nxt += 1
+        instructions.append(Instruction(Op.AND, (shifted, Const(1))))
+        bit = ResultRef(nxt)
+        nxt += 1
+        instructions.append(Instruction(Op.ADD, (acc, bit)))
+        acc = ResultRef(nxt)
+        nxt += 1
+    return Program(width, tuple(instructions), acc)
+
+
+_POPCOUNT8_OPS = (
+    Op.LSHR, Op.AND, Op.SUB, Op.AND, Op.LSHR,
+    Op.AND, Op.ADD, Op.LSHR, Op.ADD, Op.AND,
+)
+
+
+@pytest.mark.slow
+def test_synthesizes_8bit_popcount():
+    spec = _popcount_spec(8)
+    library = Library(ops=_POPCOUNT8_OPS, n_constants=3, fixed_constants=(1, 2, 4))
+    result = synthesize(spec, library, seed=0)
+    assert result is not None
+    assert isinstance(equivalent(result, spec), Equivalent)
+    assert fuzz(result, popcount, trials=20_000, seed=1) is None
+
+
+_POPCOUNT32_OPS = (
+    Op.LSHR, Op.AND, Op.SUB, Op.AND, Op.LSHR, Op.AND,
+    Op.ADD, Op.LSHR, Op.ADD, Op.AND, Op.MUL, Op.LSHR,
+)
+
+
+@pytest.mark.slow
+def test_synthesizes_32bit_popcount():
+    spec = _popcount_spec(32)
+    library = Library(
+        ops=_POPCOUNT32_OPS, n_constants=4, fixed_constants=(1, 2, 4, 24)
+    )
+    result = synthesize(spec, library, seed=0)
+    assert result is not None
+    assert isinstance(equivalent(result, spec), Equivalent)
+    assert fuzz(result, popcount, trials=50_000, seed=1) is None
